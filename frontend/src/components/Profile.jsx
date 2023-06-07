@@ -6,16 +6,15 @@ import { useFormik } from "formik";
 import { profileValidation } from "../helper/validate";
 import convertToBase64 from "../helper/convert";
 import useFetch from "../hooks/fetch.hook";
-import { useAuthStore } from "../store/store";
 import {updateUser} from '../helper/helper'
+import { useNavigate } from "react-router-dom";
 
 import styles from "../styles/Username.module.css";
 
 const Profile = () => {
   const [file, setFile] = useState();
-
-  const { username } = useAuthStore((state) => state.auth);
-  const [{ isLoading, apiData, serverError }] = useFetch(`/user/${username}`);
+  const [{ isLoading, apiData, serverError }] = useFetch();
+  const navigate = useNavigate()
 
   const formik = useFormik({
     initialValues: {
@@ -30,7 +29,9 @@ const Profile = () => {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      values = await Object.assign(values, { profile: file || apiData?.profile || "" });
+      values = await Object.assign(values, {
+        profile: file || apiData?.profile || "",
+      });
       //console.log(values);
 
       const updatePromise = updateUser(values);
@@ -49,6 +50,12 @@ const Profile = () => {
     const base64 = await convertToBase64(e.target.files[0]);
     setFile(base64);
   };
+
+  //logout handler function
+  function userLogout(){
+    localStorage.removeItem('token')
+    navigate('/')
+  }
 
   if (isLoading) return <h1 className="text-2xl font-bold ">isLoading</h1>;
   if (serverError)
@@ -131,7 +138,7 @@ const Profile = () => {
             <div className="text-center py-4">
               <span className="text-gray-500">
                 Come back later?{"  "}
-                <Link className="text-red-500" to="/">
+                <Link onClick={userLogout} className="text-red-500" to="/">
                   Logout
                 </Link>
               </span>
