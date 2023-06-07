@@ -1,30 +1,45 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import avatar from "../assets/profile.png";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useFormik } from "formik";
 import { profileValidation } from "../helper/validate";
 import convertToBase64 from "../helper/convert";
+import useFetch from "../hooks/fetch.hook";
+import { useAuthStore } from "../store/store";
+import {updateUser} from '../helper/helper'
 
 import styles from "../styles/Username.module.css";
 
 const Profile = () => {
   const [file, setFile] = useState();
 
+  const { username } = useAuthStore((state) => state.auth);
+  const [{ isLoading, apiData, serverError }] = useFetch(`/user/${username}`);
+
   const formik = useFormik({
     initialValues: {
-      firstName: "Piyush",
-      lastName: "kumar",
-      mobile: "9858285",
-      email: "example@gmail.com",
-      address: "exampleffffff",
+      firstName: apiData?.firstName || "",
+      lastName: apiData?.lastName || "",
+      mobile: apiData?.mobile || "",
+      email: apiData?.email || "",
+      address: apiData?.address || "",
     },
+    enableReinitialize: true,
     validate: profileValidation,
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      values = await Object.assign(values, { profile: file || "" });
-      console.log(values);
+      values = await Object.assign(values, { profile: file || apiData?.profile || "" });
+      //console.log(values);
+
+      const updatePromise = updateUser(values);
+
+      toast.promise(updatePromise, {
+        loading: "Updating...",
+        success: <b>Update Successfully...!</b>,
+        error: <b>Could not Update!</b>,
+      });
     },
   });
 
@@ -34,6 +49,10 @@ const Profile = () => {
     const base64 = await convertToBase64(e.target.files[0]);
     setFile(base64);
   };
+
+  if (isLoading) return <h1 className="text-2xl font-bold ">isLoading</h1>;
+  if (serverError)
+    return <h1 className="text-xl text-red-500 "> {serverError.message} </h1>;
 
   return (
     <div className="container mx-auto">
@@ -51,7 +70,7 @@ const Profile = () => {
             <div className="profile flex justify-center py-4">
               <label htmlFor="profile">
                 <img
-                  src={file || avatar}
+                  src={apiData?.profile || file || avatar}
                   alt="avtar"
                   className="border-4 border-gray-100 w-[7rem] rounded-full shadow-lg cursor-pointer hover:border-gray-200"
                 />
