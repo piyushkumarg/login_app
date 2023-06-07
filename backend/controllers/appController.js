@@ -123,7 +123,7 @@ export async function getUser(req, res) {
     // mongoose return unnecessary data with object so convert it into json
     const { password, ...rest } = Object.assign({}, user.toJSON());
 
-    return res.status(200).send(rest);
+    return res.status(201).send(rest);
   } catch (error) {
     return res.status(500).send({ error: "Internal Server Error" });
   }
