@@ -99,7 +99,7 @@ export async function generateOTP(username) {
       const {
         data: { email },
       } = await getUser({ username });
-      let text = `Your Password Recovery OTP is ${code}. Verify and recover your password.`;
+      const text = `Your Password Recovery OTP is ${code}. Verify and recover your password.`;
       await axios.post("/api/registerMail", {
         username,
         userEmail: email,
