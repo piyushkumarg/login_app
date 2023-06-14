@@ -45,7 +45,7 @@ const Recovery = () => {
       error: <b>Could not send it!</b>,
     });
     sendPromise.then((OTP) => {
-      //console.log(OTP);
+     // console.log(OTP);
     });
   }
 
